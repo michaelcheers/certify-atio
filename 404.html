@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--
+  GitHub Pages 404 fallback — served for every path on this wrapper origin
+  until the service worker installs. Once /sw.js is registered and active,
+  every subsequent request gets intercepted and proxied to portal.lynxseal.com
+  with tenant globals injected; this bootstrap HTML never renders again.
+
+  No iframe, no postMessage — the SW makes the portal appear same-origin.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading ATIO…</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#fff; font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  body { display:flex; align-items:center; justify-content:center; color:#666; }
+</style>
+</head>
+<body>
+Loading…
+<script>
+(async () => {
+  if (!('serviceWorker' in navigator)) {
+    document.body.textContent = 'This site requires a modern browser (service worker support).';
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    // If the SW is already active (returning visitor), reload now so the
+    // current navigation gets intercepted. If it's still installing, wait
+    // for activation then reload.
+    if (reg.active) {
+      location.reload();
+      return;
+    }
+    const sw = reg.installing || reg.waiting;
+    if (!sw) {
+      document.body.textContent = 'SW registered but has no installing/waiting worker.';
+      return;
+    }
+    sw.addEventListener('statechange', () => {
+      if (sw.state === 'activated') location.reload();
+    });
+  } catch (e) {
+    document.body.textContent = 'Failed to register service worker: ' + (e && e.message || e);
+  }
+})();
+</script>
+</body>
+</html>
