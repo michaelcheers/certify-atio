@@ -19,6 +19,12 @@ const PORTAL_ORIGIN = 'https://portal.lynxseal.com';
 const TENANT = 'ATIO';
 const APP = 'certify';              // 'certify' → /index.html, 'verify' → /verify-document.html
 const ORG_NAME = 'ATIO';            // appended to <title> as " · ATIO"
+// SSO orgs authenticate on their own site. sign-in.html, when SSO_LOGIN_URL is
+// set, drives the external login bridge instead of the portal password form:
+// it loads this URL (which reads the member's existing org session, mints an
+// activation code via stamp-internal, and 302s to /login#<code> on this
+// origin). ATIO members never type a portal password.
+const SSO_LOGIN_URL = 'https://atio.on.ca/estamp-link';
 const DEFAULT_PATH = APP === 'verify' ? '/verify-document.html' : '/index.html';
 
 // Files served from the wrapper origin itself (not proxied). Anything else
@@ -45,6 +51,7 @@ const TENANT_GLOBALS_JS = `
 window.TENANT=${JSON.stringify(TENANT)};
 window.WRAPPER_APP=${JSON.stringify(APP)};
 window.ORG_NAME=${JSON.stringify(ORG_NAME)};
+window.SSO_LOGIN_URL=${JSON.stringify(SSO_LOGIN_URL)};
 document.addEventListener('DOMContentLoaded', function () {
   try {
     document.body.classList.add(
